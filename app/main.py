@@ -32,22 +32,32 @@ def handle_log():
     }
     """
     if not request.is_json:
+        app.logger.warning(f"Bad request to /log: not JSON. Raw data: {request.data.decode(errors='ignore')}")
         return jsonify({"error": "Request must be JSON"}), 400
 
     data = request.get_json()
+    # Log the received JSON data at a debug level for general visibility
+    app.logger.debug(f"Received log data for /log: {data}")
+
     service = data.get('service')
     level = data.get('level')
     message = data.get('message')
     details = data.get('details') # Get optional details field
 
     if not all([service, level, message]):
+        app.logger.warning(f"Bad request to /log: Missing required fields (service, level, message). Received data: {data}")
         return jsonify({"error": "Missing data: service, level, and message are required"}), 400
 
-    if service not in ['client', 'server']: # Enforce known services, can be expanded
+    # Validate service: must be 'client' or 'server'.
+    if service not in ['client', 'server']:
+        app.logger.warning(f"Bad request to /log: Invalid service name '{service}'. Must be 'client' or 'server'. Received data: {data}")
         return jsonify({"error": "Invalid service name. Must be 'client' or 'server'."}), 400
 
-    if level not in ['info', 'success', 'warning', 'error']:
-        return jsonify({"error": "Invalid log level."}), 400
+    # Validate level
+    valid_levels = ['info', 'success', 'warning', 'error']
+    if level not in valid_levels:
+        app.logger.warning(f"Bad request to /log: Invalid log level '{level}'. Must be one of {valid_levels}. Received data: {data}")
+        return jsonify({"error": f"Invalid log level. Must be one of {valid_levels}."}), 400
 
     try:
         details_to_store = None
