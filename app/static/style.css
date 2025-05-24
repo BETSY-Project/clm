@@ -1,0 +1,13 @@
+/* Custom styles for CLM (if needed beyond Tailwind) */
+body {
+    font-family: 'Inter', sans-serif; /* A nice sans-serif font */
+}
+
+/* Style for log entries for better readability */
+.log-entry {
+    padding: 8px;
+    margin-bottom: 4px;
+    border-radius: 4px;
+    font-size: 0.875rem; /* text-sm */
+    line-height: 1.25rem; /* leading-tight */
+}

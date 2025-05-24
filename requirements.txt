@@ -1,0 +1,3 @@
+# Dependencies for Custom Log Manager (CLM)
+Flask
+Flask-CORS
