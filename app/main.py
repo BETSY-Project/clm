@@ -54,7 +54,7 @@ def handle_log():
         return jsonify({"error": "Invalid service name. Must be 'client' or 'server'."}), 400
 
     # Validate level
-    valid_levels = ['info', 'success', 'warning', 'error']
+    valid_levels = ['info', 'success', 'warning', 'error', 'debug']
     if level not in valid_levels:
         app.logger.warning(f"Bad request to /log: Invalid log level '{level}'. Must be one of {valid_levels}. Received data: {data}")
         return jsonify({"error": f"Invalid log level. Must be one of {valid_levels}."}), 400
@@ -143,7 +143,6 @@ def generate_log_stream(service_name: str):
         for log_entry in initial_logs:
             log_dict = dict(log_entry) if not isinstance(log_entry, dict) else log_entry
             event_data = f"event: initial_log\ndata: {json.dumps(log_dict)}\n\n"
-            # app.logger.debug(f"[{service_name}] Yielding initial_log: {json.dumps(log_dict)}")
             yield event_data
             if log_dict.get('timestamp', 0) > last_sent_timestamp:
                 last_sent_timestamp = log_dict['timestamp']
@@ -152,7 +151,6 @@ def generate_log_stream(service_name: str):
         app.logger.info(f"[{service_name}] Entering polling loop for new logs...")
 
         while True:
-            # app.logger.debug(f"[{service_name}] Polling for new logs after timestamp: {last_sent_timestamp}")
             try:
                 with get_db_connection() as conn:
                     cursor = conn.cursor()
@@ -168,12 +166,9 @@ def generate_log_stream(service_name: str):
                     for log_row in new_logs:
                         log_dict = dict(log_row)
                         event_data = f"event: new_log\ndata: {json.dumps(log_dict)}\n\n"
-                        # app.logger.debug(f"[{service_name}] Yielding new_log: {json.dumps(log_dict)}")
                         yield event_data
                         if log_dict.get('timestamp', 0) > last_sent_timestamp:
                              last_sent_timestamp = log_dict['timestamp']
-                # else:
-                    # app.logger.debug(f"[{service_name}] No new logs found.")
             except sqlite3.Error as e: # Catch potential sqlite3 errors during polling
                 app.logger.error(f"[{service_name}] Database error during SSE polling: {e}")
                 # Optionally, yield an error event to the client or just continue polling

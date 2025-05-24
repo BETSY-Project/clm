@@ -37,6 +37,10 @@ document.addEventListener('DOMContentLoaded', () => {
             case 'error':
                 textColorClass = 'text-red-600';
                 break;
+            case 'debug':
+                textColorClass = 'text-gray-500';
+                break;
+            // 'info' will use the default 'text-black'
         }
         logEntryDiv.classList.add(textColorClass);
 
@@ -104,15 +108,19 @@ document.addEventListener('DOMContentLoaded', () => {
     // Function to append a single log to the container and scroll
     function appendLogToContainer(log, logsContainer, serviceName) {
         const logElement = createLogElement(log);
-        const placeholder = logsContainer.querySelector('p.text-gray-500');
+        const placeholder = logsContainer.querySelector('p.text-gray-500, p.text-red-500');
         if (placeholder) {
             logsContainer.innerHTML = '';
         }
+
+        const isScrolledToBottom = logsContainer.scrollHeight - logsContainer.scrollTop <= logsContainer.clientHeight + 30;
+
         logsContainer.appendChild(logElement);
-        if (logsContainer.scrollTop + logsContainer.clientHeight >= logsContainer.scrollHeight - 30) {
+
+        if (isScrolledToBottom) {
             logsContainer.scrollTop = logsContainer.scrollHeight;
         }
-        updateDisplayedCount(serviceName); // Update displayed count
+        updateDisplayedCount(serviceName);
     }
 
     // Function to update the displayed log count for a service
@@ -174,48 +182,81 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Function to toggle all log details in a column
+    function toggleAllLogDetails(serviceName, expand) {
+        const logsContainer = document.getElementById(`logs-container-${serviceName}`);
+        if (!logsContainer) return;
+
+        const logWrappers = logsContainer.querySelectorAll('.log-entry-wrapper');
+        logWrappers.forEach(wrapper => {
+            const detailsDiv = wrapper.querySelector('.log-details');
+            const arrowSpan = wrapper.querySelector('.arrow-indicator');
+            if (detailsDiv && arrowSpan && arrowSpan.style.visibility !== 'hidden') {
+                if (expand) {
+                    detailsDiv.classList.remove('hidden');
+                    arrowSpan.textContent = '▼';
+                } else {
+                    detailsDiv.classList.add('hidden');
+                    arrowSpan.textContent = '▶';
+                }
+            }
+        });
+    }
+
     // Create columns for each service and set up SSE
     services.forEach(serviceName => {
         const columnDiv = document.createElement('div');
-        columnDiv.className = 'flex flex-col';
+        columnDiv.className = 'flex flex-col min-h-0';
         columnDiv.id = `log-column-${serviceName}`;
 
         const headerDiv = document.createElement('div');
-        headerDiv.className = 'flex justify-between items-center mb-3';
+        headerDiv.className = 'flex justify-between items-center mb-2';
 
         const titleElement = document.createElement('h2');
-        titleElement.className = 'text-xl font-semibold capitalize';
+        titleElement.className = 'text-lg font-semibold capitalize';
         
         const dbCountSpan = document.createElement('span');
         dbCountSpan.id = `db-count-${serviceName}`;
-        dbCountSpan.textContent = '...'; // Initial loading text for count
-        dbCountSpan.className = 'mr-2'; // Add some margin to the right of the count
+        dbCountSpan.textContent = '...';
+        dbCountSpan.className = 'mr-2 text-sm text-gray-500';
 
         titleElement.appendChild(dbCountSpan);
         titleElement.appendChild(document.createTextNode(`${serviceName} Logs`));
 
         const logsContainer = document.createElement('div');
-        logsContainer.id = `logs-container-${serviceName}`; // ID for updating displayed count
-        logsContainer.className = 'logs-container flex-grow overflow-y-auto border border-gray-300 rounded p-2 bg-white';
+        logsContainer.id = `logs-container-${serviceName}`;
+        logsContainer.className = 'logs-container flex-grow overflow-y-auto border border-gray-300 rounded p-2 bg-white min-h-0';
         logsContainer.innerHTML = '<p class="text-gray-500">Connecting to log stream...</p>';
 
         const displayedCountElement = document.createElement('div');
-        displayedCountElement.id = `displayed-count-${serviceName}`; // ID for updating
-        displayedCountElement.className = 'text-sm text-gray-600 mt-1 ml-1';
+        displayedCountElement.id = `displayed-count-${serviceName}`;
+        displayedCountElement.className = 'text-xs text-gray-500 mt-1 ml-1';
         displayedCountElement.textContent = 'Displayed: 0';
 
         const buttonGroup = document.createElement('div');
-        buttonGroup.className = 'flex items-center space-x-2'; // space-x-2 for spacing between buttons
+        buttonGroup.className = 'flex items-center space-x-1';
+
+        const expandAllButton = document.createElement('button');
+        expandAllButton.className = 'text-xs text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-100 focus:outline-none focus:ring-1 focus:ring-blue-300';
+        expandAllButton.innerHTML = '▼';
+        expandAllButton.title = `Expand all ${serviceName} logs`;
+        expandAllButton.onclick = () => toggleAllLogDetails(serviceName, true);
+
+        const collapseAllButton = document.createElement('button');
+        collapseAllButton.className = 'text-xs text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-100 focus:outline-none focus:ring-1 focus:ring-blue-300';
+        collapseAllButton.innerHTML = '▶';
+        collapseAllButton.title = `Collapse all ${serviceName} logs`;
+        collapseAllButton.onclick = () => toggleAllLogDetails(serviceName, false);
 
         const clearButton = document.createElement('button');
-        clearButton.className = 'text-red-600 hover:text-red-800 p-2 rounded-full hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-red-300';
-        clearButton.innerHTML = '&#x1F5D1;&#xFE0F;'; // Trash can emoji
+        clearButton.className = 'text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-100 focus:outline-none focus:ring-1 focus:ring-red-300';
+        clearButton.innerHTML = '&#x1F5D1;&#xFE0F;';
         clearButton.title = `Clear ${serviceName} logs`;
         clearButton.onclick = () => clearLogs(serviceName, logsContainer);
         
         const copyButton = document.createElement('button');
-        copyButton.className = 'text-blue-600 hover:text-blue-800 p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-300';
-        copyButton.innerHTML = '&#x1F4CB;'; // Clipboard emoji
+        copyButton.className = 'text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-300';
+        copyButton.innerHTML = '&#x1F4CB;';
         copyButton.title = 'Copy last 100 logs';
         copyButton.onclick = async () => {
             try {
@@ -231,7 +272,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     let logString = `${formatTimestamp(log.timestamp)} [${log.level.toUpperCase()}] ${log.message}`;
                     if (log.details) {
                         const detailsString = typeof log.details === 'string' ? log.details : JSON.stringify(log.details, null, 2);
-                        logString += `\n--- Details ---\n${detailsString}\n---------------`;
+                        logString += `\n  Details: ${detailsString.replace(/\n/g, '\n  ')}`;
                     }
                     return logString;
                 }).join('\n\n');
@@ -239,9 +280,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (formattedLogs) {
                     await navigator.clipboard.writeText(formattedLogs);
                     const originalIcon = copyButton.innerHTML;
-                    copyButton.innerHTML = '&#x2714;'; // Checkmark
+                    copyButton.innerHTML = '&#x2714;';
                     setTimeout(() => {
-                        copyButton.innerHTML = '&#x1F4CB;'; // Restore clipboard
+                        copyButton.innerHTML = '&#x1F4CB;';
                     }, 1500);
                 } else {
                     alert('No logs to copy.');
@@ -252,17 +293,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
         
-        buttonGroup.appendChild(clearButton);
+        buttonGroup.appendChild(expandAllButton);
+        buttonGroup.appendChild(collapseAllButton);
         buttonGroup.appendChild(copyButton);
+        buttonGroup.appendChild(clearButton);
         
         headerDiv.appendChild(titleElement);
         headerDiv.appendChild(buttonGroup);
 
         columnDiv.appendChild(headerDiv);
         columnDiv.appendChild(logsContainer);
-        columnDiv.appendChild(displayedCountElement); // Add displayed count element
+        columnDiv.appendChild(displayedCountElement);
         logColumnsContainer.appendChild(columnDiv);
-        fetchAndUpdateDbCount(serviceName); // Fetch and set DB count AFTER column is in DOM
+        fetchAndUpdateDbCount(serviceName);
 
         // Setup SSE
         const eventSource = new EventSource(`${API_BASE_URL}/stream/${serviceName}`);
@@ -297,6 +340,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Adjust grid columns based on the number of services
     if (services.length > 0) {
-        logColumnsContainer.className = `grid grid-cols-${services.length} gap-1 h-full`; // Always divide by service count, ensure full height for grid, added gap-1
+        logColumnsContainer.classList.add(`grid-cols-${services.length > 2 ? 2 : services.length}`);
+        logColumnsContainer.classList.add('gap-2');
     }
 });

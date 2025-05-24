@@ -24,30 +24,28 @@ CLM runs as a Docker container.
 
 ## Sending Logs to CLM
 
-The CLM server expects logs at the `POST /log` endpoint with the following JSON payload:
+The CLM server expects logs at the `POST /log` endpoint. Both client-side (TypeScript) and server-side (Python) applications are configured to send logs to this endpoint.
 
+**Payload Structure:**
 ```json
 {
     "service": "string",  // e.g., "client", "server"
-    "level": "string",    // e.g., "info", "success", "warning", "error"
-    "message": "string",  // The log message
-    "details": "any"      // Optional: additional details (object, string, etc.)
+    "level": "string",    // e.g., "info", "success", "warning", "error", "debug"
+    "message": "string",  // The core log message
+    "details": "any"      // Optional: additional structured details.
+                          // For server logs, this may include logger_name, exception traces, etc.
 }
 ```
 
-### Client-side (JavaScript/TypeScript)
+**Configuration:**
+*   **Client (TypeScript)**: Uses `NEXT_PUBLIC_CLM_URL` (e.g., in `.env.local`) for the CLM server address.
+*   **Server (Python)**: Uses `CLM_URL` (e.g., in `server/.env.local`) for the CLM server address.
 
-The application uses a logger utility found in `client/lib/logging/logger.ts`.
-
-*   **Configuration**: Ensure the `NEXT_PUBLIC_CLM_URL` environment variable in your client's `.env.local` (or equivalent) is set to your CLM server address (e.g., `NEXT_PUBLIC_CLM_URL=http://localhost:9999`).
-*   **Behavior**: The client logger sends logs with `service: "client"`. If CLM is unavailable or not configured, logs will fall back to the browser console.
-
-### Server-side (Python)
-
-The application uses a logger utility configured via `server/app/logger.py`.
-
-*   **Configuration**: The Python logger uses `settings.CLM_URL` (typically set in `server/.env.local` via `app.config.py`) to determine the CLM server address (e.g., `CLM_URL="http://localhost:9999"`).
-*   **Behavior**: The server logger, obtained via `get_server_logger` from `app.logger`, sends logs with `service: "server"`. If CLM is unavailable or not configured, logs will fall back to the server's terminal output.
+**Behavior:**
+*   Logs are tagged with their respective `service` name ("client" or "server").
+*   Server logs are structured to provide a clean message and utilize appropriate log levels for better presentation in CLM.
+*   If CLM is unavailable or not configured, logs will fall back to the browser console (for client) or server terminal (for server). Note that very early server startup messages (before configuration is fully loaded) will also appear in the server terminal.
+*   The CLM backend now accepts "debug" level logs. Currently, the CLM UI will display "debug" logs similarly to "info" logs.
 
 ## Viewing Logs
 
@@ -56,3 +54,5 @@ Open `http://localhost:9999` in your browser to access the CLM web interface. Yo
 ## TODO
 
 - Implement an API Key system for authentication/security.
+- SQLite MCP Server for my AI coding Agent.
+- Filtering.
