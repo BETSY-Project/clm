@@ -1,5 +1,4 @@
 # Dockerfile for Custom Log Manager (CLM)
-# Base Python image - Alpine for smallest size
 FROM python:3.11-alpine
 
 # Set working directory
