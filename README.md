@@ -8,7 +8,7 @@ CLM runs as a Docker container.
 
 1.  **Build the Docker image:**
     ```bash
-    cd /path/to/your/clm_project_directory/clm 
+    cd /path/to/your/clm_project_directory/clm
     # Or simply `cd clm` if you are in the project root
     docker build -t clm-app .
     ```

@@ -160,7 +160,7 @@ document.addEventListener('DOMContentLoaded', () => {
             dbCountSpanElement.textContent = 'ERR'; // General Error
         }
     }
-    
+
     // Function to clear logs for a service
     async function clearLogs(serviceName, logsContainer) {
         if (!confirm(`Are you sure you want to delete all logs for '${serviceName}'?`)) {
@@ -214,7 +214,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const titleElement = document.createElement('h2');
         titleElement.className = 'text-lg font-semibold capitalize';
-        
+
         const dbCountSpan = document.createElement('span');
         dbCountSpan.id = `db-count-${serviceName}`;
         dbCountSpan.textContent = '...';
@@ -253,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         clearButton.innerHTML = '&#x1F5D1;&#xFE0F;';
         clearButton.title = `Clear ${serviceName} logs`;
         clearButton.onclick = () => clearLogs(serviceName, logsContainer);
-        
+
         const copyButton = document.createElement('button');
         copyButton.className = 'text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-300';
         copyButton.innerHTML = '&#x1F4CB;';
@@ -267,7 +267,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 const logs = await response.json();
                 const last100Logs = logs.slice(-100);
-                
+
                 const formattedLogs = last100Logs.map(log => {
                     let logString = `${formatTimestamp(log.timestamp)} [${log.level.toUpperCase()}] ${log.message}`;
                     if (log.details) {
@@ -292,12 +292,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert('Failed to copy logs.');
             }
         };
-        
+
         buttonGroup.appendChild(expandAllButton);
         buttonGroup.appendChild(collapseAllButton);
         buttonGroup.appendChild(copyButton);
         buttonGroup.appendChild(clearButton);
-        
+
         headerDiv.appendChild(titleElement);
         headerDiv.appendChild(buttonGroup);
 
