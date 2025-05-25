@@ -22,6 +22,17 @@ CLM runs as a Docker container.
     ```
     This will start CLM, accessible at `http://localhost:9999`. Log data is persisted in the `clm_data` directory inside your `clm` project folder.
 
+### Running locally without Docker
+
+For development purposes you can run the server directly with Python. First install the dependencies and then start the application:
+
+```bash
+pip install -r requirements.txt
+python app/main.py
+```
+
+The server listens on port `5000` and will create a `clm_data` directory for the SQLite database if it does not already exist.
+
 ## Sending Logs to CLM
 
 The CLM server expects logs at the `POST /log` endpoint. Both client-side (TypeScript) and server-side (Python) applications are configured to send logs to this endpoint.
