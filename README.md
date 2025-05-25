@@ -56,7 +56,6 @@ The CLM server expects logs at the `POST /log` endpoint. Both client-side (TypeS
 *   Logs are tagged with their respective `service` name ("client" or "server").
 *   Server logs are structured to provide a clean message and utilize appropriate log levels for better presentation in CLM.
 *   If CLM is unavailable or not configured, logs will fall back to the browser console (for client) or server terminal (for server). Note that very early server startup messages (before configuration is fully loaded) will also appear in the server terminal.
-*   The CLM backend now accepts "debug" level logs. Currently, the CLM UI will display "debug" logs similarly to "info" logs.
 
 ## Viewing Logs
 
@@ -65,5 +64,5 @@ Open `http://localhost:9999` in your browser to access the CLM web interface. Yo
 ## TODO
 
 - Implement an API Key system for authentication/security.
-- SQLite MCP Server for my AI coding Agent.
+- SQLite MCP Server for AI coding Agents.
 - Filtering.
