@@ -1,11 +1,14 @@
 import sqlite3
 import os
 import time
+import logging
 
 # Path for the data directory inside the Docker container
 # The WORKDIR is /app, and the volume is mounted at /app/clm_data
 DATABASE_DIR = '/app/clm_data'
 DATABASE_PATH = os.path.join(DATABASE_DIR, 'logs.db')
+
+logger = logging.getLogger(__name__)
 
 def get_db_connection():
     """Establishes a connection to the SQLite database."""
@@ -29,9 +32,9 @@ def init_db():
     try:
         with get_db_connection() as conn:
             conn.execute(sql)
-        print(f"Database initialized at {DATABASE_PATH}")
+        logger.info(f"Database initialized at {DATABASE_PATH}")
     except sqlite3.Error as e:
-        print(f"Database initialization error: {e}")
+        logger.error(f"Database initialization error: {e}")
 
 def add_log_entry(service: str, level: str, message: str, details: str | None = None):
     """Adds a new log entry to the database, optionally including details."""
@@ -40,9 +43,9 @@ def add_log_entry(service: str, level: str, message: str, details: str | None = 
     try:
         with get_db_connection() as conn:
             conn.execute(sql, (service, current_timestamp, level, message, details))
-        print(f"CLM DB: Successfully added log for {service} - {level} - {message[:50]}...")
+        logger.info(f"CLM DB: Successfully added log for {service} - {level} - {message[:50]}...")
     except sqlite3.Error as e:
-        print(f"CLM DB: Database error adding log for {service} - {level} - {message[:50]}...: {e}")
+        logger.error(f"CLM DB: Database error adding log for {service} - {level} - {message[:50]}...: {e}")
 
 def get_logs_by_service(service: str):
     """Retrieves all logs for a specific service, ordered by timestamp."""
@@ -53,8 +56,8 @@ def get_logs_by_service(service: str):
             logs = cursor.fetchall()
         return [dict(log) for log in logs]
     except sqlite3.Error as e:
-        print(f"Database error retrieving logs for {service}: {e}")
-        return [] # Return empty list on error
+        logger.error(f"Database error retrieving logs for {service}: {e}")
+        return []  # Return empty list on error
 
 def count_logs_by_service(service: str):
     """Counts all logs for a specific service."""
@@ -65,8 +68,8 @@ def count_logs_by_service(service: str):
             count = cursor.fetchone()[0]
         return count
     except sqlite3.Error as e:
-        print(f"Database error counting logs for {service}: {e}")
-        return 0 # Return 0 on error
+        logger.error(f"Database error counting logs for {service}: {e}")
+        return 0  # Return 0 on error
 
 def delete_logs_by_service(service: str):
     """Deletes all logs for a specific service."""
@@ -76,7 +79,7 @@ def delete_logs_by_service(service: str):
             cursor = conn.execute(sql, (service,))
             return cursor.rowcount # Returns the number of deleted rows
     except sqlite3.Error as e:
-        print(f"Database error deleting logs for {service}: {e}")
+        logger.error(f"Database error deleting logs for {service}: {e}")
         return 0
 
 # Initialize the database when this module is loaded
