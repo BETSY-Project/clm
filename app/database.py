@@ -21,7 +21,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             service TEXT NOT NULL,
             timestamp INTEGER NOT NULL, -- Store as UNIX timestamp in nanoseconds (integer for perfect ordering)
-            level TEXT NOT NULL CHECK(level IN ('info', 'success', 'warning', 'error')),
+            level TEXT NOT NULL CHECK(level IN ('info', 'success', 'warning', 'error', 'debug')),
             message TEXT NOT NULL,
             details TEXT
         )
