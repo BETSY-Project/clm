@@ -52,12 +52,17 @@ document.addEventListener('DOMContentLoaded', () => {
         timestampSpan.className = 'font-mono text-xs mr-2 text-gray-500 flex-shrink-0';
         timestampSpan.textContent = formatTimestamp(log.timestamp);
 
+const levelSpan = document.createElement('span');
+        levelSpan.className = 'font-mono text-xs mr-2 flex-shrink-0';
+        levelSpan.classList.add(textColorClass);
+        levelSpan.textContent = `[${log.level.toUpperCase()}]`;
         const messageSpan = document.createElement('span');
         messageSpan.className = 'flex-grow';
         messageSpan.textContent = log.message;
 
         logEntryDiv.appendChild(arrowSpan);
         logEntryDiv.appendChild(timestampSpan);
+        logEntryDiv.appendChild(levelSpan);
         logEntryDiv.appendChild(messageSpan);
         logWrapperDiv.appendChild(logEntryDiv);
 
